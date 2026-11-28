@@ -1,7 +1,7 @@
 {
   "schema": "jazn_tests_studio_contract_catalog/v2",
-  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.31",
-  "active_definition_count": 3830,
+  "system_version": "16.3.25.5.116.0.34.94.6.127.30.10.32",
+  "active_definition_count": 3836,
   "contracts": {
     "tests/test_accepted_visible_turn_e2e.py::test_phase_ready_to_accepted_visible_final_e2e": {
       "path": "tests/test_accepted_visible_turn_e2e.py",
@@ -70754,6 +70754,23 @@
       "description_source": "source_identity",
       "line": 73
     },
+    "tests/test_stage05_audit_projection.py::test_bootstrap_storage_stays_within_selected_system": {
+      "path": "tests/test_stage05_audit_projection.py",
+      "name": "test_bootstrap_storage_stays_within_selected_system",
+      "purpose": "Bootstrap storage stays within selected system",
+      "expected": "Pytest completes this contract cleanly and all 1 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "e2e",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 1,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.tools._active_extraction_cache_impl"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 7
+    },
     "tests/test_stage05_cli_runtime_first.py::test_runtime_gate_precedes_model_discovery": {
       "path": "tests/test_stage05_cli_runtime_first.py",
       "name": "test_runtime_gate_precedes_model_discovery",
@@ -70965,6 +70982,73 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 92
+    },
+    "tests/test_stage05_executor_settlement.py::test_complete_phase_one_fields_respect_selected_executor": {
+      "path": "tests/test_stage05_executor_settlement.py",
+      "name": "test_complete_phase_one_fields_respect_selected_executor",
+      "purpose": "Complete phase one fields respect selected executor",
+      "expected": "Pytest completes this contract cleanly and all 2 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 2,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_transport_failure"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 14
+    },
+    "tests/test_stage05_executor_settlement.py::test_semantic_failure_keeps_last_rejection_without_exposing_candidate": {
+      "path": "tests/test_stage05_executor_settlement.py",
+      "name": "test_semantic_failure_keeps_last_rejection_without_exposing_candidate",
+      "purpose": "Semantic failure keeps last rejection without exposing candidate",
+      "expected": "Pytest completes this contract cleanly and all 5 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 5,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_transport_failure"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 32
+    },
+    "tests/test_stage05_executor_settlement.py::test_daemon_settles_contradictory_worker_result_on_admitted_channel": {
+      "path": "tests/test_stage05_executor_settlement.py",
+      "name": "test_daemon_settles_contradictory_worker_result_on_admitted_channel",
+      "purpose": "Daemon settles contradictory worker result on admitted channel",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "integration",
+      "tags": [],
+      "markers": [
+        "parametrize"
+      ],
+      "assertion_count": 4,
+      "expected_exceptions": [],
+      "targets": [
+        "latka_jazn.config",
+        "latka_jazn.core",
+        "latka_jazn.core.chat_command_contract",
+        "latka_jazn.core.conversation_runner",
+        "latka_jazn.core.model_transport_failure"
+      ],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 60
     },
     "tests/test_stage05_f01_admission_ledger_guard.py::test_invalid_ledger_quarantine_does_not_authorize_new_admission": {
       "path": "tests/test_stage05_f01_admission_ledger_guard.py",
@@ -74052,6 +74136,38 @@
       "status": "current",
       "description_source": "source_identity",
       "line": 112
+    },
+    "tests/test_stage05_monitor_settlement.py::test_effective_endpoint_precedence": {
+      "path": "tests/test_stage05_monitor_settlement.py",
+      "name": "test_effective_endpoint_precedence",
+      "purpose": "Effective endpoint precedence",
+      "expected": "Pytest completes this contract cleanly and all 4 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 4,
+      "expected_exceptions": [
+        "ValueError"
+      ],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 10
+    },
+    "tests/test_stage05_monitor_settlement.py::test_unordered_terminal_history_and_counts": {
+      "path": "tests/test_stage05_monitor_settlement.py",
+      "name": "test_unordered_terminal_history_and_counts",
+      "purpose": "Unordered terminal history and counts",
+      "expected": "Pytest completes this contract cleanly and all 6 explicit assertion(s) plus declared expected exceptions hold.",
+      "category": "unit",
+      "tags": [],
+      "markers": [],
+      "assertion_count": 6,
+      "expected_exceptions": [],
+      "targets": [],
+      "status": "current",
+      "description_source": "source_identity",
+      "line": 25
     },
     "tests/test_stage05_ollama_cloud_boundary.py::test_cloud_selector_cannot_reach_either_ollama_adapter": {
       "path": "tests/test_stage05_ollama_cloud_boundary.py",
