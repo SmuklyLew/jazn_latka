@@ -146,6 +146,29 @@ def ollama_terminal_attempt_failure(response: object) -> dict[str, Any] | None:
     }
 
 
+def _attempt_metadata(response: dict[str, Any]) -> list[dict[str, Any]]:
+    attempts = json_object(response.get("transport")).get("attempts")
+    if not isinstance(attempts, list):
+        return []
+    diagnostics = []
+    for raw in attempts[-2:]:
+        attempt = json_object(raw)
+        entry: dict[str, Any] = {}
+        for field in ("done", "request_dispatched"):
+            if type(attempt.get(field)) is bool:
+                entry[field] = attempt[field]
+        for field in ("eval_count", "prompt_eval_count", "num_predict", "ollama_num_ctx"):
+            if type(attempt.get(field)) is int and attempt[field] >= 0:
+                entry[field] = attempt[field]
+        if attempt.get("done_reason") in ("length", "stop", "load", "unload"):
+            entry["done_reason"] = attempt["done_reason"]
+        circuit = json_object(attempt.get("model_transport_circuit")).get("state")
+        if circuit in ("closed", "open", "half_open"):
+            entry["circuit_state"] = circuit
+        diagnostics.append(entry)
+    return diagnostics
+
+
 def terminal_local_model_failure(decision: object) -> dict[str, Any] | None:
     """Identify a failed selected local executor, not a valid accepted candidate.
 
@@ -160,9 +183,37 @@ def terminal_local_model_failure(decision: object) -> dict[str, Any] | None:
     synthesis = json_object(value.get("model_guided_retry_synthesis"))
     if not synthesis:
         synthesis = json_object(value.get("model_guided_synthesis"))
-    if synthesis.get("used") is True:
+    response = json_object(synthesis.get("adapter_response"))
+    failure = ollama_terminal_attempt_failure(response)
+    if failure is not None:
+        return {**failure, "adapter_status": response.get("status"), "attempts": _attempt_metadata(response)}
+    if (value.get("fallback_classification") != "cannot_answer_directly"
+            or response.get("adapter_id") != "local_llm_adapter" or response.get("provider") != "ollama"):
         return None
-    return ollama_terminal_attempt_failure(synthesis.get("adapter_response"))
+    validation = json_object(value.get("rejected_candidate_validation"))
+    evaluations = [json_object(item) for item in synthesis.get("candidate_evaluations") or []]
+    rejected = [item for item in evaluations if item.get("source") == "model_adapter"
+                and item.get("accepted") is False]
+    status = response.get("status")
+    if status in ("empty_output", "language_mismatch"):
+        code = status
+    elif status == "completed" and response.get("generated") is True and (
+        rejected or validation.get("accepted") is False or synthesis.get("reason") == "selected_candidate_empty_after_clean"
+    ):
+        code = "model_candidate_rejected"
+    else:
+        return None
+    def codes(values: list[Any]) -> list[str]:
+        return [v for v in values if isinstance(v, str) and re.fullmatch(r"[a-zA-Z0-9_:-]{1,96}", v)][:16]
+    return {
+        "provider": "ollama", "adapter_id": "local_llm_adapter",
+        "error_code": code, "failure_kind": "candidate_rejection",
+        "adapter_status": status, "attempts": _attempt_metadata(response),
+        "automatic_retry_allowed": False, "host_generation_authorized": False,
+        "violations": codes([v for item in rejected for v in item.get("violations") or []]),
+        "validator_reasons": codes([validation.get("mismatch_reason")]),
+        "missing_required_components": codes(validation.get("missing_required_components") or []),
+    }
 
 
 
@@ -185,7 +236,7 @@ def terminal_model_failure(decision: object) -> dict[str, Any] | None:
     synthesis = json_object(value.get("model_guided_synthesis"))
     if not (
         value.get("model_generated") is False
-        and value.get("requires_host_model") is True
+        and (value.get("model_generation_required") is True or value.get("requires_host_model") is True)
         and value.get("fallback_classification") == "cannot_answer_directly"
         and preflight.get("executor") == "unavailable"
         and preflight.get("available") is False
@@ -227,6 +278,8 @@ def terminal_model_failure(decision: object) -> dict[str, Any] | None:
 
 def model_failure_projection(failure: dict[str, Any]) -> tuple[str, str]:
     """Use the same diagnostic field and bridge status in both projections."""
+    if failure.get("failure_kind") == "candidate_rejection":
+        return "model_candidate_rejection", "local_model_candidate_rejected"
     if failure.get("failure_kind") == "executor_unavailable":
         return "model_executor_unavailable", "model_executor_unavailable"
     if failure.get("failure_kind") == "generation_limit":

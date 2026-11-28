@@ -160,7 +160,8 @@ class ModelGuidedResponseSynthesizer:
             )
         body = self._clean(selected.text)
         if not body:
-            return ModelGuidedSynthesis(False, draft_body, selected.status, selected.provider, selected.model, "selected_candidate_empty_after_clean", [])
+            return ModelGuidedSynthesis(False, draft_body, selected.status, selected.provider, selected.model, "selected_candidate_empty_after_clean", [],
+                                        adapter_response=selected.adapter_response, candidate_evaluations=candidate_evaluations)
         sources = self._sources_for_candidate(selected, context)
         reason = "generated_from_grounded_memory_context" if sources else "generated_from_jazn_cognitive_context"
         return ModelGuidedSynthesis(

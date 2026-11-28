@@ -53,7 +53,7 @@ def _monitor_icon() -> QIcon:
 class ProbeThread(QThread):
     observed = Signal(object)
 
-    def __init__(self, root: Path | None, daemon_port: int, ollama_port: int) -> None:
+    def __init__(self, root: Path | None, daemon_port: int, ollama_port: int | None) -> None:
         super().__init__()
         self.root = root
         self.daemon_port = daemon_port
@@ -74,7 +74,7 @@ class MonitorWindow(QMainWindow):
     snapshot_observed = Signal(object)
 
     def __init__(self, root: Path | None, daemon_port: int,
-                 ollama_port: int, *, smoke: bool = False,
+                 ollama_port: int | None, *, smoke: bool = False,
                  integrated: bool = False, parent: QWidget | None = None,
                  interval_seconds: int | None = None) -> None:
         super().__init__(parent)
@@ -349,11 +349,14 @@ class MonitorWindow(QMainWindow):
             "\nHistoryczny kandydat nie potwierdza bieżącej gotowości ani finalizacji.")
         counts = jobs.get("counts") if isinstance(jobs.get("counts"), dict) else None
         self.job_counts.setText(
-            ("Zadania: przyjęte do kolejki " + str(counts.get("submitted_total")) +
+            ("Bieżąca instancja — przyjęte do kolejki " + str(counts.get("submitted_total")) +
              " | ukończone " + str(counts.get("completed_total")) +
              " | błędy " + str(counts.get("failed_non_timeout_total")) +
              " | timeouty " + str(counts.get("execution_timeout_total")) +
-             " | oczekujące " + str(counts.get("pending")))
+             " | odrzucone finalizacje " + str(counts.get("host_finalization_rejected_total")) +
+             " | wygasłe finalizacje " + str(counts.get("host_finalization_expired_total")) +
+             " | oczekujące " + str(counts.get("pending")) +
+             "\nZachowane rekordy zadań: " + str(jobs.get("history_counts") or {}))
             if counts else "Statystyki: brak zweryfikowanych liczników")
         self.footer.setText(
             "Odczyt UTC: " + str(report.get("observed_at_utc") or "UNKNOWN") +

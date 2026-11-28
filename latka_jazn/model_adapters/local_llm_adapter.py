@@ -367,6 +367,7 @@ class LocalLlmAdapter:
             "accepted_history_turns_sent": history_turn_count,
             "history_source": "accepted_conversation_projection" if history_turn_count else "no_verified_history",
             "ollama_num_ctx": num_ctx,
+            "num_predict": self.max_output_tokens,
             "request_bytes": len(encoded),
             "request_max_bytes": request_max_bytes,
             "estimated_prompt_tokens": estimated_prompt_tokens,

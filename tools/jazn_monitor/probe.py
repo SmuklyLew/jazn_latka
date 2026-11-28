@@ -10,6 +10,7 @@ from typing import Any
 from urllib import request
 
 from .telemetry import jobs_snapshot, process_snapshot, _windows_process_rows
+from latka_jazn.core.ollama_endpoint import configured_ollama_port
 from .paths import monitor_workspace
 from .generation import last_ollama_generation
 
@@ -87,7 +88,7 @@ def _matches_instance(marker: dict[str, Any], live: dict[str, Any], root: Path) 
 
 
 def snapshot(root: Path | None, *, daemon_port: int = 8787,
-             ollama_port: int = 11434) -> dict[str, Any]:
+             ollama_port: int | None = None) -> dict[str, Any]:
     """Read-only observation. UNKNOWN is not STOPPED and /live is not /ready."""
     services = {name: Observation("unknown", "Brak zweryfikowanych danych") for name in SERVICES}
     selected = Path(root).expanduser().resolve() if root is not None else None
@@ -160,11 +161,12 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
     elif selected is not None:
         services["Daemon Jaźni"] = Observation("unknown", "Wybrany katalog nie zawiera run.py")
 
-    tags = _http_json(ollama_port, "/api/tags")
+    port = configured_ollama_port() if ollama_port is None else ollama_port
+    tags = _http_json(port, "/api/tags") if port is not None else None
     if isinstance(tags, dict) and isinstance(tags.get("models"), list):
         models = [m.get("name") for m in tags["models"] if isinstance(m, dict)
                   and isinstance(m.get("name"), str)]
-        loaded = _http_json(ollama_port, "/api/ps")
+        loaded = _http_json(port, "/api/ps") if port is not None else None
         if (isinstance(loaded, dict) and isinstance(loaded.get("models"), list)
                 and all(isinstance(item, dict)
                         and isinstance(item.get("name"), str)
@@ -176,6 +178,8 @@ def snapshot(root: Path | None, *, daemon_port: int = 8787,
             "reachable", f"API dostępne · modeli: {len(models)} · {loaded_detail}; "
                          "generacja niesprawdzona"
         )
+    elif port is None:
+        services["Ollama"] = Observation("unknown", "Niezweryfikowany lokalny endpoint Ollama")
     elif selected is not None and tags is None:
         services["Ollama"] = Observation("unavailable", "Brak odpowiedzi /api/tags; stan procesu Ollama niepotwierdzony")
     elif selected is not None:

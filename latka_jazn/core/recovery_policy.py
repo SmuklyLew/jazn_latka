@@ -237,7 +237,10 @@ class RecoveryPolicy:
                     state.answer_validation = state.first_validation
                 else:
                     state.body, state.source_origin_detail, state.runtime_answer_quality, state.model_replied = (
-                        _model_guided_rejection_disclosure(state.model_synthesis, state.first_validation)
+                        _model_guided_rejection_disclosure(
+                            getattr(state, "retry_synthesis", None) or state.model_synthesis,
+                            getattr(state, "retry_validation", None) or state.first_validation,
+                        )
                     )
                     state.template_origin = engine.template_registry.classify_body(
                         state.body, detected_intent=str(state.detected_dialogue_intent)
@@ -246,7 +249,14 @@ class RecoveryPolicy:
                     state.decision_dict["handler_generation_mode"] = "degraded_truth_disclosure"
                     state.decision_dict["source_origin_detail"] = state.source_origin_detail
                     state.decision_dict["fallback_classification"] = "cannot_answer_directly"
-                    state.decision_dict["requires_host_model"] = not state.model_replied
+                    state.decision_dict["model_generation_required"] = True
+                    state.decision_dict["requires_host_model"] = state.model_executor.executor == "host_bridge"
+                    validation = getattr(state, "retry_validation", None) or state.first_validation
+                    state.decision_dict["rejected_candidate_validation"] = {
+                        "accepted": validation.accepted,
+                        "mismatch_reason": validation.mismatch_reason,
+                        "missing_required_components": list(validation.missing_required_components or []),
+                    }
                     state.decision_dict["runtime_answer_quality"] = state.runtime_answer_quality
                     state.decision_dict["model_generated"] = False
                     state.answer_validation = _validate_recovery_body(state, engine)
@@ -305,7 +315,7 @@ class RecoveryPolicy:
 
     def resolve_reasoning(self, state: TurnPipelineState) -> None:
         engine = self.engine
-        if state.reasoning_decision.decision == "regenerate" and not state.repair_used and not state.decision_dict.get("requires_host_model"):
+        if state.reasoning_decision.decision == "regenerate" and not state.repair_used and not state.decision_dict.get("requires_host_model") and not state.decision_dict.get("model_generation_required"):
             state.synthesis = engine.runtime_response_synthesizer.synthesize(
                 user_text=state.request.text,
                 detected_intent=str(state.detected_dialogue_intent),

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from latka_jazn.core.source_provenance import read_source_provenance
@@ -120,7 +120,9 @@ def _existing_relative(root: Path, candidates: list[str]) -> str | None:
     root = Path(root)
     for rel in candidates:
         value = str(rel or "").strip().replace("\\", "/")
-        if value and (root / value).is_file():
+        path = root / value
+        if (value and not PureWindowsPath(value).anchor and ".." not in Path(value).parts
+                and path.resolve().is_relative_to(root.resolve()) and path.is_file()):
             return value
     return None
 
@@ -138,11 +140,11 @@ def _active_runtime_write_database(root: Path) -> str | None:
             if active_id and str(item.get("shard_id") or "") != active_id:
                 continue
             rel = str(item.get("path") or "").strip().replace("\\", "/")
-            if rel and (root / rel).is_file():
-                return rel
+            if found := _existing_relative(root, [rel]):
+                return found
         for item in ordered:
             rel = str(item.get("path") or "").strip().replace("\\", "/")
-            if rel and (root / rel).is_file() and rel.startswith("memory/sqlite/runtime_write_v1/"):
+            if rel.startswith("memory/sqlite/runtime_write_v1/") and _existing_relative(root, [rel]):
                 return rel
     except Exception:
         pass
@@ -151,7 +153,7 @@ def _active_runtime_write_database(root: Path) -> str | None:
         key=lambda path: (path.stat().st_mtime_ns, path.name),
         reverse=True,
     ) if (root / "memory" / "sqlite" / "runtime_write_v1").is_dir() else []
-    return candidates[0].relative_to(root).as_posix() if candidates else None
+    return _existing_relative(root, [path.relative_to(root).as_posix() for path in candidates])
 
 
 def _active_storage_from_bootstrap(root: Path, version: str | None) -> dict[str, Any]:
@@ -159,9 +161,9 @@ def _active_storage_from_bootstrap(root: Path, version: str | None) -> dict[str,
     try:
         data = json.loads((root / "BOOTSTRAP_JAZN_CURRENT.json").read_text(encoding="utf-8"))
         active = str(data.get("active_database") or "").strip().replace("\\", "/")
-        if active and (root / active).is_file():
+        if _existing_relative(root, [active]):
             runtime_write = str(data.get("active_runtime_write_database") or "").strip().replace("\\", "/")
-            runtime_write = runtime_write if runtime_write and (root / runtime_write).is_file() else _active_runtime_write_database(root)
+            runtime_write = _existing_relative(root, [runtime_write]) or _active_runtime_write_database(root)
             return {
                 "active_database": active,
                 "active_runtime_write_database": runtime_write,

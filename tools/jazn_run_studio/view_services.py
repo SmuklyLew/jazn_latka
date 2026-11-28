@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QWidget,
 )
 
+from latka_jazn.core.ollama_endpoint import configured_ollama_port
 from . import STUDIO_VERSION
 from .core import ACTIONS, STUDIOS, Controller, Settings, StudioError, discovery, save_settings
 from .service_status_dialog import ServiceStatusDialog
@@ -168,7 +169,7 @@ class ServiceViewMixin:
         if op == "start":
             job = self.core.ensure_ollama() if service == "ollama" else self.core.start_service(service)
             if service == "ollama" and job.key == "probe:ollama":
-                # Existing app or CLI owns port 11434; observe it, do not adopt or spawn.
+                # Existing app or CLI owns the configured port; observe it, do not adopt or spawn.
                 self.show_log(job.key)
                 return
         elif op == "stop":
@@ -193,7 +194,7 @@ class ServiceViewMixin:
             self.render_monitor_service_table()
             return
         from urllib.parse import urlsplit
-        ports = {"runtime": str(urlsplit(self.core.settings.daemon_url).port), "ollama": "11434",
+        ports = {"runtime": str(urlsplit(self.core.settings.daemon_url).port), "ollama": str(configured_ollama_port() or "—"),
                  "gateway": self.core.settings.mcp_port, "cloudflare": "HTTPS", "supervisor": "—", "memory": "—"}
         for service, row in self.service_rows.items():
             from .service_visual_state import visual_state, COLORS, TITLES
@@ -271,7 +272,7 @@ class ServiceViewMixin:
             port = urlsplit(self.core.settings.daemon_url).port or 8787
             try:
                 monitor = MonitorWindow(
-                    self.core.root, port, 11434,
+                    self.core.root, port, None,
                     integrated=True, smoke=self.smoke, parent=self,
                     interval_seconds=int(self.core.settings.service_refresh_seconds),
                 )
@@ -303,7 +304,7 @@ class ServiceViewMixin:
                if self.monitor_observed_at is not None else None)
         ports = {
             "runtime": str(urlsplit(self.core.settings.daemon_url).port or 8787),
-            "ollama": "11434", "gateway": self.core.settings.mcp_port,
+            "ollama": str(configured_ollama_port() or "—"), "gateway": self.core.settings.mcp_port,
             "cloudflare": "HTTPS", "supervisor": "—", "memory": "—",
         }
         for service, row in self.service_rows.items():

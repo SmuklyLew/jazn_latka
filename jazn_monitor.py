@@ -16,11 +16,11 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Jaźń Monitor (Windows/Ubuntu, read-only)")
     parser.add_argument("--root", type=Path, help="Selected Jaźń SYSTEM directory")
     parser.add_argument("--daemon-port", type=int, default=8787)
-    parser.add_argument("--ollama-port", type=int, default=11434)
+    parser.add_argument("--ollama-port", type=int)
     parser.add_argument("--probe-json", action="store_true", help="Single read-only JSON observation")
     parser.add_argument("--gui-smoke", action="store_true", help="Qt smoke without any probes")
     opts = parser.parse_args(argv)
-    if not 1 <= opts.daemon_port <= 65535 or not 1 <= opts.ollama_port <= 65535:
+    if not 1 <= opts.daemon_port <= 65535 or (opts.ollama_port is not None and not 1 <= opts.ollama_port <= 65535):
         parser.error("Ports must be 1..65535")
     if opts.probe_json:
         from tools.jazn_monitor.probe import snapshot

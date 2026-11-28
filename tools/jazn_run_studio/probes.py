@@ -16,6 +16,7 @@ from urllib.error import HTTPError
 from urllib.parse import urlsplit
 from urllib.request import build_opener, HTTPRedirectHandler, HTTPSHandler, ProxyHandler, Request
 
+from latka_jazn.core.ollama_endpoint import ollama_api_base
 from .external import run
 
 
@@ -55,19 +56,9 @@ def read_json(url: str, *, timeout: float = 3) -> tuple[int, dict[str, Any]]:
     return code, data
 
 
-def ollama_api_base(value: str) -> str:
-    """Accept only an explicit loopback API, without credentials or URL suffixes."""
-    parts = urlsplit(value)
-    if (parts.scheme != "http" or parts.hostname != "127.0.0.1"
-            or parts.port is None or not 1024 <= parts.port <= 65535
-            or parts.username or parts.password or parts.path not in {"", "/"}
-            or parts.query or parts.fragment):
-        raise ValueError("Unsupported local Ollama API base")
-    return f"http://127.0.0.1:{parts.port}"
-
-
-def ollama(model: str = "", *, api_base: str = "http://127.0.0.1:11434") -> dict[str, Any]:
-    code, payload = read_json(ollama_api_base(api_base) + "/api/tags")
+def ollama(model: str = "", *, api_base: str | None = None) -> dict[str, Any]:
+    base = ollama_api_base(api_base)
+    code, payload = read_json(base + "/api/tags")
     entries = payload.get("models")
     if code != 200 or not isinstance(entries, list) or any(not isinstance(m, dict) or not isinstance(m.get("name"), str) for m in entries):
         raise ValueError("Invalid Ollama model list")
@@ -78,7 +69,7 @@ def ollama(model: str = "", *, api_base: str = "http://127.0.0.1:11434") -> dict
     loaded: list[str] = []
     loaded_state = "unavailable"
     try:
-        running_code, running = read_json(ollama_api_base(api_base) + "/api/ps")
+        running_code, running = read_json(base + "/api/ps")
     except (OSError, ValueError, HTTPException):
         pass
     else:
@@ -142,7 +133,7 @@ def ollama_generation(model: str) -> dict[str, Any]:
     if evidence["selected_model_present"] is not True:
         return {**evidence, "generation_verified": False, "reason": "model_not_visible"}
     request = Request(
-        "http://127.0.0.1:11434/api/chat",
+        ollama_api_base() + "/api/chat",
         data=json.dumps({
             "model": model, "messages": [{"role": "user", "content": "Odpowiedz: OK"}],
             "stream": False, "options": {"num_predict": 12},

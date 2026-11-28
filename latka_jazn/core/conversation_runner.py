@@ -10,6 +10,7 @@ from latka_jazn.core.conversation_state_store import ConversationStateStore
 from latka_jazn.core.memory_intent_contract import is_session_dialogue_reference, parse_session_turn_reference, session_history_forbidden
 from latka_jazn.core.conversation_channel import canonical_chat_command, normalize_model_channel_config
 from latka_jazn.core.json_types import json_object
+from latka_jazn.core.model_executor_preflight import host_generation_requested
 from latka_jazn.core.model_transport_failure import model_failure_projection, terminal_model_failure
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
 from latka_jazn.core.runtime_truth_gate import apply_runtime_truth_gate
@@ -114,18 +115,7 @@ def _host_finalization_pending(result: dict[str, Any], *, can_continue: bool) ->
         return False, []
     runtime_turn = json_object(result.get("runtime_turn_contract"))
     final_contract = json_object(result.get("final_response_contract"))
-    requires_host = bool(
-        decision.get("requires_host_model")
-        or runtime_turn.get("requires_host_model")
-        or final_contract.get("requires_host_model")
-        or str(
-            runtime_turn.get("fallback_classification")
-            or final_contract.get("fallback_classification")
-            or ""
-        )
-        == "cannot_answer_directly"
-    )
-    if not requires_host:
+    if not host_generation_requested(result):
         return False, []
     truth_gate = json_object(result.get("runtime_truth_gate"))
     blocked_for_host_generation = bool(

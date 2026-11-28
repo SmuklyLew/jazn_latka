@@ -823,6 +823,8 @@ class DaemonChatJob:
     host_request_contract_hash: str | None = None
     host_request_expires_at_utc: str | None = None
     host_finalization_reason: str | None = None
+    accepted_finalization_at_utc: str | None = None
+    last_host_attempt_at_utc: str | None = None
     host_finalization_attempt_count: int = 0
     previous_request_id: str | None = None
     previous_runtime_turn_id: str | None = None
@@ -844,6 +846,11 @@ class DaemonChatJob:
         )
         if not str(self.user_text_sha256 or "").strip() and self.user_text:
             self.user_text_sha256 = hashlib.sha256(self.user_text.encode("utf-8")).hexdigest()
+
+    def admits_host_channel(self) -> bool:
+        return self.command == "--chat-gpt" or (
+            self.command == "--chat" and self.client in {"chatgpt_daemon_bridge", "secure_mcp_gateway"}
+        )
 
     def terminal(self) -> bool:
         return self.status in DAEMON_CHAT_JOB_TERMINAL_STATES
@@ -1486,6 +1493,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     self._terminal_metadata_code(job.host_finalization_reason)
                     if job.terminal() else job.host_finalization_reason
                 ),
+                "accepted_finalization_at_utc": job.accepted_finalization_at_utc,
+                "last_host_attempt_at_utc": job.last_host_attempt_at_utc,
                 "host_finalization_attempt_count": job.host_finalization_attempt_count,
                 "previous_request_id": job.previous_request_id,
                 "previous_runtime_turn_id": job.previous_runtime_turn_id,
@@ -1526,6 +1535,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     "phase_result_ready_at_utc", "host_turn_id", "host_trace_id",
                     "host_request_contract_hash", "host_request_expires_at_utc",
                     "host_finalization_reason", "host_finalization_attempt_count",
+                    "last_host_attempt_at_utc", "accepted_finalization_at_utc",
                     "previous_request_id", "previous_runtime_turn_id",
                     "previous_trace_id", "host_finalization_gate_state",
                     "host_finalization_gate_wait_started_at_utc",
@@ -1637,6 +1647,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 ),
                 reset_session=bool(raw.get("reset_session")),
                 request_fingerprint=fingerprint,
+                accepted_finalization_at_utc=raw.get("accepted_finalization_at_utc"),
+                last_host_attempt_at_utc=raw.get("last_host_attempt_at_utc"),
                 admission_owner_sha256=raw.get("admission_owner_sha256"),
                 user_text_sha256=str(raw.get("user_text_sha256") or "") or None,
                 created_at_utc=str(raw.get("created_at_utc") or ""),
@@ -1741,6 +1753,8 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 ),
                 reset_session=bool(raw.get("reset_session")),
                 request_fingerprint=request_fingerprint,
+                accepted_finalization_at_utc=raw.get("accepted_finalization_at_utc"),
+                last_host_attempt_at_utc=raw.get("last_host_attempt_at_utc"),
                 admission_owner_sha256=raw.get("admission_owner_sha256"),
                 user_text_sha256=str(raw.get("user_text_sha256") or "") or None,
                 created_at_utc=str(raw.get("created_at_utc") or utc_now_iso()),
@@ -2977,6 +2991,17 @@ class JaznDaemonServer(ThreadingHTTPServer):
         job.completed_at_utc = completed_at
         job.host_finalization_reason = str(reason or status)
         job.host_finalization_attempt_count += 1
+        if status == "completed" and job.host_turn_id:
+            from latka_jazn.core.chatgpt_host_pending_store import HostRequestStoreError, read_committed_host_request
+            try:
+                record = read_committed_host_request(self.config.root, turn_id=job.host_turn_id)
+            except HostRequestStoreError:
+                record = {}
+            binding = record.get("binding") or {}
+            if (record.get("request_contract_hash") == job.host_request_contract_hash
+                    and binding.get("daemon_request_id") == job.request_id
+                    and binding.get("trace_id") == job.host_trace_id):
+                job.accepted_finalization_at_utc = record.get("consumed_at_utc")
         job.error = None if status == "completed" else job.host_finalization_reason
         job.result = {
             "ok": status == "completed",
@@ -3018,7 +3043,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
             resolve_durable_turn_settlement,
         )
 
-        if job.status != "failed":
+        if job.status != "failed" or not job.admits_host_channel():
             return False
         error_code = self._job_execution_error_code(job)
         if not execution_failure_allows_durable_settlement_recovery(error_code):
@@ -3417,6 +3442,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     "request_id": request_id,
                     "job_status": job.status,
                 }
+            job.last_host_attempt_at_utc = utc_now_iso()
             job.host_finalization_attempt_count += 1
             job.host_finalization_reason = str(reason or normalized_outcome or "host_finalization_attempt")
             if normalized_outcome == "accepted":
@@ -3549,6 +3575,11 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 _heartbeat_callback=lambda: setattr(job, "last_heartbeat_at_utc", utc_now_iso()),
             )
             result["ok"] = bool(result.get("ok", True))
+            host_channel = job.admits_host_channel()
+            if result.get("host_finalization_pending") is True and not host_channel:
+                result.update(ok=False, answer_ok=False, host_finalization_pending=False,
+                              execution_state="rejected", must_not_replay=True)
+                result["error_code"] = result.get("error_code") or "host_executor_not_authorized"
 
             # The independent watchdog may have terminalized this job while the
             # session worker was still unwinding.  Never let a late result
@@ -3590,7 +3621,7 @@ class JaznDaemonServer(ThreadingHTTPServer):
                 "daemon_instance_id": self.daemon_instance_id,
                 "async_job": True,
             }
-            if job.command == "--chat-gpt" or job.client in {"chatgpt_daemon_bridge", "secure_mcp_gateway"}:
+            if host_channel:
                 from latka_jazn.core.chat_command_contract import attach_chatgpt_host_contract
 
                 attach_chatgpt_host_contract(
@@ -3635,6 +3666,12 @@ class JaznDaemonServer(ThreadingHTTPServer):
                     self.state.chat_job_host_finalization_rejected_count += 1
                 elif result["ok"]:
                     job.status = "completed"
+                    from latka_jazn.core.chat_command_contract import chatgpt_result_has_displayable_runtime_final
+                    if (result.get("canonical_persistence_ok") is True
+                            and result.get("persistence_degraded") is False
+                            and result.get("answer_ok") is True
+                            and chatgpt_result_has_displayable_runtime_final(result)):
+                        job.accepted_finalization_at_utc = utc_now_iso()
                     self.state.chat_job_completed_count += 1
                 else:
                     job.status = "failed"

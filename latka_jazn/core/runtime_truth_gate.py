@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from latka_jazn.core.model_executor_preflight import host_generation_requested
+
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -276,11 +278,11 @@ def apply_runtime_truth_gate(result: dict[str, Any]) -> tuple[dict[str, Any], di
         if gate.truthful_degraded_disclosure:
             updated["normal_response_blocked"] = True
             updated["runtime_response_status"] = "truthful_degraded_cannot_answer_directly"
-            updated["requires_host_model"] = True
+            updated["requires_host_model"] = host_generation_requested(updated)
             decision = dict(json_object(updated.get("conversation_decision")))
             decision["runtime_truth_gate"] = gate_payload
             decision["normal_response_allowed"] = False
-            decision["requires_host_model"] = True
+            decision["requires_host_model"] = updated["requires_host_model"]
             updated["conversation_decision"] = decision
         elif gate.timestamp_degraded or gate.time_trust_state == "local_machine_unverified":
             updated["timestamp_degraded"] = True

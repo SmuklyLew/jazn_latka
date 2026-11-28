@@ -608,6 +608,7 @@ class Controller:
         self.setup_observation: dict[str, Any] = {}
         # Only a validated final, shown in Qt and durably acknowledged, sets this.
         self.accepted_turn_proof: dict[str, str] | None = None
+        self.ollama_generation_endpoint: str | None = None
         self.ollama_generation_proof: tuple[str, float] | None = None
         self.monitor_conditions: dict[str, str] = {}
 
@@ -732,6 +733,13 @@ class Controller:
         self._launch(job, [python_executable(self.settings, root=self.root), "-X", "utf8", *entry], None)
         return job
 
+    def _ollama_port(self) -> int:
+        from latka_jazn.core.ollama_endpoint import configured_ollama_port
+        port = configured_ollama_port()
+        if port is None:
+            raise StudioError("Nieprawidłowy lokalny endpoint Ollama")
+        return port
+
     def ensure_ollama(self) -> Job:
         """Start only if the loopback port is free; otherwise verify existing API.
 
@@ -739,7 +747,7 @@ class Controller:
         """
         with socket.socket() as probe:
             probe.settimeout(0.25)
-            occupied = probe.connect_ex(("127.0.0.1", 11434)) == 0
+            occupied = probe.connect_ex(("127.0.0.1", self._ollama_port())) == 0
         if occupied:
             return self.probe("ollama")  # HTTP identity and model evidence follow.
         return self.start_service("ollama")
@@ -749,7 +757,7 @@ class Controller:
             # Fail closed if another service already occupies the API port.
             with socket.socket() as probe:
                 probe.settimeout(0.3)
-                if probe.connect_ex(("127.0.0.1", 11434)) == 0:
+                if probe.connect_ex(("127.0.0.1", self._ollama_port())) == 0:
                     raise StudioError("Port Ollama jest zajęty; Studio nie przejmuje istniejącego procesu")
             argv = [executable(self.settings.ollama, "ollama"), "serve"]
         elif service == "cloudflare":
@@ -822,7 +830,9 @@ class Controller:
         settings = self.settings
         if observe_only and key not in {"ollama", "ollama_process", "gateway", "cloudflare"}:
             raise StudioError("Monitor może odczytywać tylko usługi bez generowania")
-        fingerprint = sha256(json.dumps([asdict(settings), observe_only], sort_keys=True).encode()).hexdigest()
+        from latka_jazn.core.ollama_endpoint import configured_ollama_port
+        port = configured_ollama_port() if key in {"ollama", "ollama_generate"} else None
+        fingerprint = sha256(json.dumps([asdict(settings), observe_only, port], sort_keys=True).encode()).hexdigest()
         calls = {"ollama": lambda: probes.ollama(settings.model),
                  "ollama_process": lambda: probes.ollama_process(settings.ollama),
                  "ollama_generate": lambda: probes.ollama_generation(settings.model),
@@ -845,6 +855,7 @@ class Controller:
                 evidence = calls[key]()
                 if key == "ollama_generate":
                     with self.lock:
+                        self.ollama_generation_endpoint = str(port)
                         self.ollama_generation_proof = (
                             (settings.model, time.monotonic())
                             if evidence.get("generation_verified") is True
@@ -855,7 +866,8 @@ class Controller:
                 elif key == "ollama":
                     with self.lock:
                         if (self.ollama_generation_proof is not None
-                                and self.ollama_generation_proof[0] != settings.model):
+                                and (self.ollama_generation_proof[0] != settings.model
+                                     or self.ollama_generation_endpoint != str(port))):
                             self.ollama_generation_proof = None
                         if (evidence.get("endpoint_reachable") is not True
                                 or evidence.get("selected_model_present") is False):
@@ -1054,9 +1066,12 @@ class Controller:
     def _run(self, job: Job, argv: list[str], timeout: int | None) -> None:
         try:
             # Never pass shell text; the retained handle is the ownership proof.
+            env = self.child_environment(profile=job.key in {"start", "restart"})
+            if job.key == "service:ollama":
+                env["OLLAMA_HOST"] = f"127.0.0.1:{self._ollama_port()}"
             proc = spawn(argv, cwd=self.root, stdin=subprocess.PIPE if job.input_data is not None else subprocess.DEVNULL,
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                    env=self.child_environment(profile=job.key in {"start", "restart"}))
+                                    env=env)
             with self.lock:
                 job.proc = proc
                 job.pid = proc.pid

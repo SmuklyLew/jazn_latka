@@ -5,6 +5,7 @@ No user prompts, model outputs, raw command lines or private MEMORY are emitted.
 """
 from __future__ import annotations
 
+from collections import Counter
 from datetime import datetime, timezone
 import json
 import os
@@ -59,7 +60,7 @@ def _audit_reasons(root: Path, request_ids: set[str]) -> dict[str, str]:
     if not request_ids:
         return {}
     db = monitor_workspace(root) / "core_state" / "memory_runtime" / "sqlite" / "runtime_write_v1" / "runtime_audit.sqlite3"
-    if db.is_symlink() or not db.is_file():
+    if not db.resolve().is_relative_to(monitor_workspace(root).resolve()) or db.is_symlink() or not db.is_file():
         return {}
     found: dict[str, str] = {}
     try:
@@ -104,7 +105,9 @@ def jobs_snapshot(root: Path | None, marker: dict[str, Any] | None) -> dict[str,
     counts = None
     if isinstance(summary, dict):
         keys = ("submitted_total", "completed_total", "failed_non_timeout_total",
-                "execution_timeout_total", "pending")
+                "execution_timeout_total", "host_finalization_rejected_total",
+                "host_finalization_expired_total", "cancelled_total", "recovered_total",
+                "queue_size", "pending")
         counts = {key: summary.get(key) if type(summary.get(key)) is int
                   and summary[key] >= 0 else None for key in keys}
     data = _read_json(monitor_workspace(root) / "daemon_chat_jobs.json", MAX_JOB_JSON)
@@ -113,53 +116,65 @@ def jobs_snapshot(root: Path | None, marker: dict[str, Any] | None) -> dict[str,
         out["counts"] = counts
         out["state"] = "unavailable"
         return out
-    raw_jobs = data["jobs"][-MAX_VISIBLE_JOBS:]
-    items = []
-    for entry in raw_jobs:
+    terminal = {"completed", "failed", "rejected", "execution_timeout", "cancelled",
+                "recovered_after_restart", "host_finalization_rejected", "host_finalization_expired"}
+    known = terminal | {"accepted", "pending", "running", "queued",
+                        "awaiting_host_finalization", "waiting_for_host_finalization"}
+    items: list[dict[str, Any]] = []
+    for entry in data["jobs"]:
         if not isinstance(entry, dict):
             continue
-        state = entry.get("status") if entry.get("status") in (
-            "pending", "running", "completed", "failed", "cancelled", "rejected"
-        ) else "unknown"
         req = entry.get("request_id")
         if not isinstance(req, str) or not re.fullmatch(r"[a-zA-Z0-9-]{1,64}", req):
             continue
+        status = entry.get("status")
+        created = entry.get("created_at_utc")
+        completed = entry.get("completed_at_utc")
         items.append({
-            "request_id": req,
-            "state": state,
-            "duration_seconds": _elapsed(entry.get("started_at_utc") or entry.get("created_at_utc"),
-                                         entry.get("completed_at_utc")),
-            "error_code": _safe_code(entry.get("result_error_code"))
-                          or _safe_code(entry.get("error")),
-            "reason_code": None,
-            "created_at_utc": entry.get("created_at_utc") if isinstance(entry.get("created_at_utc"), str) else None,
+            "accepted_finalization_at_utc": entry.get("accepted_finalization_at_utc") if status == "completed" else None,
+            "last_host_attempt_at_utc": entry.get("last_host_attempt_at_utc"),
+            "request_id": req, "state": status if isinstance(status, str) and status in known else "unknown",
+            "created_at_utc": created if _date_epoch(created) is not None else None,
+            "completed_at_utc": completed if _date_epoch(completed) is not None else None,
+            "duration_seconds": _elapsed(entry.get("started_at_utc") or created, completed)
+                                if completed or (isinstance(status, str) and status not in terminal) else None,
+            "error_code": _safe_code(entry.get("result_error_code")) or _safe_code(entry.get("error")),
+            "reason_code": _safe_code(entry.get("host_finalization_reason")),
         })
-    rejected_ids = {item["request_id"] for item in items if item["state"] in ("failed", "rejected")}
-    reasons = _audit_reasons(root, rejected_ids)
-    for item in items:
-        item["reason_code"] = reasons.get(item["request_id"])
-    last = (summary.get("last_terminal_job")
-            if isinstance(summary, dict) and isinstance(summary.get("last_terminal_job"), dict)
-            else None)
-    last = last or (data["jobs"][-1] if data["jobs"] and isinstance(data["jobs"][-1], dict) else None)
-    finalization: dict[str, Any] = {"state": "unknown", "reason_code": None,
-                                    "error_code": None, "request_id": None}
-    if isinstance(last, dict):
-        status = last.get("job_status", last.get("status"))
-        last_id = last.get("request_id")
-        if isinstance(last_id, str) and re.fullmatch(r"[a-zA-Z0-9-]{1,64}", last_id):
-            finalization["request_id"] = last_id
-            finalization["error_code"] = _safe_code(last.get("error_code")) or _safe_code(last.get("result_error_code"))
-            finalization["reason_code"] = reasons.get(last_id)
-        if status in ("failed", "rejected", "cancelled"):
-            finalization["state"] = "rejected"
-        elif status == "completed":
-            finalization["state"] = "completed_job"
-        elif status in ("pending", "running"):
-            finalization["state"] = "pending"
-    finalization["accepted_finalization"] = None
-    finalization["evidence"] = "job_status_only"
-    return {"state": "available", "counts": counts, "items": items, "finalization": finalization,
+
+    def latest(rows: list[dict[str, Any]], field: str) -> dict[str, Any] | None:
+        if len(rows) == 1:
+            return rows[0]
+        dated = [row for row in rows if row.get(field)]
+        return max(dated, key=lambda row: (_date_epoch(row[field]) or 0.0, row["request_id"]), default=None)
+
+    admitted = latest(items, "created_at_utc")
+    completed_job = latest([row for row in items if row["state"] == "completed"], "completed_at_utc")
+    last = latest([row for row in items if row["state"] in terminal], "completed_at_utc")
+    accepted_final = latest([row for row in items if _date_epoch(row["accepted_finalization_at_utc"]) is not None],
+                            "accepted_finalization_at_utc")
+    host_attempt = latest([row for row in items if _date_epoch(row["last_host_attempt_at_utc"]) is not None],
+                          "last_host_attempt_at_utc")
+    history_counts = dict(Counter(item["state"] for item in items))
+    items.sort(key=lambda row: (
+        _date_epoch(row["completed_at_utc"] or row["created_at_utc"]) or float("-inf"), row["request_id"]
+    ), reverse=True)
+    visible = items[:MAX_VISIBLE_JOBS]
+    reason_rows = visible + ([last] if last else [])
+    reasons = _audit_reasons(root, {row["request_id"] for row in reason_rows
+                                   if row["state"] in ("failed", "rejected") and not row["reason_code"]})
+    for row in reason_rows:
+        row["reason_code"] = row["reason_code"] or reasons.get(row["request_id"])
+    finalization = {"state": "unknown", "reason_code": None, "error_code": None,
+                    "request_id": None, "accepted_finalization": None, "evidence": "job_status_only"}
+    if last is not None:
+        finalization.update({key: last[key] for key in ("reason_code", "error_code", "request_id")})
+        finalization["state"] = {"failed": "rejected", "completed": "completed_job"}.get(last["state"], last["state"])
+    return {"state": "available", "counts": counts, "counts_scope": "current_daemon_instance",
+            "history_counts": history_counts, "history_scope": "retained_recovery_records",
+            "items": visible, "last_admitted_job": admitted, "last_completed_job": completed_job,
+            "last_terminal_job": last, "last_host_attempt": host_attempt,
+            "last_accepted_finalization": accepted_final, "finalization": finalization,
             "scope": "daemon_recovery_metadata_only"}
 
 

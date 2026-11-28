@@ -12,6 +12,7 @@ from typing import Any, Literal, TextIO
 from latka_jazn.core.host_stdout_delivery import write_complete_stdout
 from latka_jazn.config import JaznConfig
 from latka_jazn.core.json_types import json_object
+from latka_jazn.core.model_executor_preflight import host_generation_requested
 from latka_jazn.core.model_transport_failure import model_failure_projection, terminal_model_failure
 from latka_jazn.core.runtime_session_state import RuntimeSessionStateStore
 from latka_jazn.core.conversation_state_store import ConversationStateStore
@@ -619,22 +620,13 @@ def chatgpt_result_has_displayable_host_final(result: dict[str, Any]) -> bool:
 def chatgpt_result_requires_host_visible_reply(result: dict[str, Any]) -> bool:
     """Detect when runtime explicitly delegates model-guided wording to the host."""
     decision = json_object(result.get("conversation_decision"))
-    runtime_turn = json_object(result.get("runtime_turn_contract"))
-    final_contract = json_object(result.get("final_response_contract"))
-    validation = _runtime_validation(result)
     if chatgpt_result_has_displayable_runtime_final(result):
         decision["requires_host_model"] = False
         result["requires_host_model"] = False
         return False
     if terminal_model_failure(decision) is not None:
         return False
-    return bool(
-        runtime_turn.get("requires_host_model")
-        or decision.get("requires_host_model")
-        or final_contract.get("requires_host_model")
-        or validation.get("requires_host_model")
-        or str(runtime_turn.get("fallback_classification") or final_contract.get("fallback_classification") or "") == "cannot_answer_directly"
-    )
+    return host_generation_requested(result)
 
 
 def chatgpt_result_requires_host_diagnostic(result: dict[str, Any]) -> bool:
@@ -1200,7 +1192,7 @@ def build_chatgpt_host_presentation_packet(payload: dict[str, Any]) -> dict[str,
             bridge.get("diagnostic_reason")
             if action == "host_diagnostic" and bridge.get("status") in (
                 "local_model_transport_failed", "local_model_output_limit_reached",
-                "model_executor_unavailable", "local_model_context_rejected",
+                "model_executor_unavailable", "local_model_context_rejected", "local_model_candidate_rejected",
             )
             else None
         ),
@@ -1260,6 +1252,9 @@ def attach_chatgpt_host_contract(
     bridge_value = result.get("chatgpt_host_bridge")
     bridge = bridge_value if isinstance(bridge_value, dict) else {}
     if not bridge or (
+        bridge.get("phase") == "host_visible_generation_requested"
+        and not host_generation_requested(result)
+    ) or (
         terminal_model_failure(result.get("conversation_decision")) is not None
         and not chatgpt_result_has_displayable_runtime_final(result)
     ):

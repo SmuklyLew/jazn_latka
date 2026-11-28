@@ -4,6 +4,7 @@ from pathlib import Path
 import json
 import os
 
+from latka_jazn.core.ollama_endpoint import configured_ollama_base
 from latka_jazn.core.runtime_root import (
     active_runtime_marker_path,
     find_runtime_root,
@@ -225,7 +226,7 @@ class JaznConfig:
     deep_recall_turn_timeout_seconds: float = field(default_factory=lambda: _env_float("JAZN_DEEP_RECALL_TURN_TIMEOUT_SECONDS", 600.0))
     terminal_model_name: str = field(default_factory=lambda: os.environ.get("JAZN_TERMINAL_MODEL_NAME", "terminal_visible_layer").strip())
     local_model_name: str = field(default_factory=lambda: _env_first("JAZN_OLLAMA_MODEL", "JAZN_LOCAL_LLM_MODEL", "JAZN_LOCAL_MODEL_NAME", default="").strip())
-    local_model_api_base: str = field(default_factory=lambda: _env_first("JAZN_OLLAMA_BASE_URL", "JAZN_LOCAL_LLM_BASE_URL", "JAZN_LOCAL_LLM_API_BASE", "JAZN_LOCAL_MODEL_API_BASE", default="http://127.0.0.1:11434").strip().rstrip("/"))
+    local_model_api_base: str = field(default_factory=configured_ollama_base)
     llama_cpp_model_name: str = field(default_factory=lambda: os.environ.get("JAZN_LLAMA_CPP_MODEL_NAME", "").strip())
     llama_cpp_model_api_base: str = field(default_factory=lambda: os.environ.get("JAZN_LLAMA_CPP_API_BASE", "http://127.0.0.1:8080/v1").strip().rstrip("/"))
 

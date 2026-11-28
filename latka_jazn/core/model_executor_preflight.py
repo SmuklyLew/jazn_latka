@@ -22,6 +22,18 @@ class ModelExecutorPreflight:
         return asdict(self)
 
 
+def host_generation_requested(result: dict[str, Any]) -> bool:
+    """Respect the selected executor, including explicit legacy host contracts."""
+    decision = json_object(result.get("conversation_decision"))
+    runtime = json_object(result.get("runtime_turn_contract"))
+    final = json_object(result.get("final_response_contract"))
+    if "model_executor_preflight" in decision:
+        executor = json_object(decision["model_executor_preflight"])
+        if executor.get("executor") != "host_bridge" or executor.get("available") is not True:
+            return False
+    return any(contract.get("requires_host_model") is True for contract in (decision, runtime, final))
+
+
 def _endpoint_location(value: object) -> str:
     """Conservative inference location: a URL, provider name or 'local' label is not proof."""
     raw = str(value or "").strip()

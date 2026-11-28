@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from .paths import monitor_workspace
+from .telemetry import _date_epoch
 
 MAX_LEDGER_TAIL = 256 * 1024
 
@@ -29,7 +30,8 @@ def last_ollama_generation(root: Path | None) -> dict[str, Any]:
             lines = stream.read(MAX_LEDGER_TAIL).splitlines()
         if offset:
             lines = lines[1:]  # discard possibly partial first record
-        for line in reversed(lines):
+        candidates = []
+        for line in lines:
             try:
                 entry = json.loads(line)
             except (ValueError, UnicodeError):
@@ -48,7 +50,12 @@ def last_ollama_generation(root: Path | None) -> dict[str, Any]:
                 value = entry.get(key)
                 if isinstance(value, str) and len(value) <= 200 and not any(ord(c) < 32 for c in value):
                     out[key] = value
-            return out
+            candidates.append(out)
+        if len(candidates) == 1:
+            return candidates[0]
+        dated = [item for item in candidates if _date_epoch(item.get("created_at_utc")) is not None]
+        return max(dated, key=lambda item: (_date_epoch(item["created_at_utc"]) or 0.0,
+                                            str(item.get("turn_id")), str(item.get("trace_id"))), default=unknown)
     except (OSError, ValueError):
         pass
     return unknown
